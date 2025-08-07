@@ -1,4 +1,4 @@
-# Laravel Service Repository Package
+# Laravel Service Repository Generator
 
 A Laravel package for generating Services and Repositories with automatic dependency injection.
 
@@ -13,7 +13,7 @@ A Laravel package for generating Services and Repositories with automatic depend
     "repositories": [
         {
             "type": "path",
-            "url": "packages/base-setup"
+            "url": "packages/laravel-service-repository"
         }
     ],
     "require": {
@@ -70,7 +70,7 @@ php artisan service-repo:publish [--force]
 
 This command will:
 - Publish helper functions to `app/helpers/functions.php`
-- Publish configuration to `config/base-setup.php`
+- Publish configuration to `config/laravel-service-repository.php`
 - Update `AppServiceProvider` with repository and service bindings
 
 **Options:**
