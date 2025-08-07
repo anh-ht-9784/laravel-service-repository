@@ -1,5 +1,5 @@
 {
-    "name": "anhht/laravel-service-repository",
+    "name": "anhht/laravel-service-repository-generator",
     "description": "A Laravel package for generating Services and Repositories with automatic dependency injection",
     "type": "library",
     "license": "MIT",

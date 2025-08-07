@@ -17,7 +17,7 @@ A Laravel package for generating Services and Repositories with automatic depend
         }
     ],
     "require": {
-        "anhht/laravel-service-repository": "*"
+        "anhht/laravel-service-repository-generator": "*"
     }
 }
 ```
@@ -31,7 +31,7 @@ composer update
 ### For Production (when published to Packagist)
 
 ```bash
-composer require anhht/laravel-service-repository
+composer require anhht/laravel-service-repository-generator
 ```
 
 ## Usage
