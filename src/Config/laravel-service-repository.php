@@ -10,5 +10,5 @@ return [
     |
     */
 
-    'version' => env('LARAVEL_SERVICE_REPOSITORY_VERSION', '1.0.0'),
+    'version' => env('LARAVEL_SERVICE_REPOSITORY_VERSION', '1.1.0'),
 ]; 

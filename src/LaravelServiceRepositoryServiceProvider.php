@@ -5,6 +5,7 @@ namespace Anhht\LaravelServiceRepository;
 use Illuminate\Support\ServiceProvider;
 use Anhht\LaravelServiceRepository\Console\CreateRepositoryAndService;
 use Anhht\LaravelServiceRepository\Console\PublishCommand;
+use Anhht\LaravelServiceRepository\Console\PublishApiRoutesCommand;
 
 
 class LaravelServiceRepositoryServiceProvider extends ServiceProvider
@@ -27,6 +28,7 @@ class LaravelServiceRepositoryServiceProvider extends ServiceProvider
             $this->commands([
                 CreateRepositoryAndService::class,
                 PublishCommand::class,
+                PublishApiRoutesCommand::class,
             ]);
         }
     }

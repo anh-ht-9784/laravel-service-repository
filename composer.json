@@ -1,6 +1,6 @@
 {
     "name": "anhht/laravel-service-repository-generator",
-    "description": "A Laravel package for generating Services and Repositories with automatic dependency injection",
+    "description": "A Laravel package for generating Services and Repositories with automatic dependency injection and API response standardization",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -26,5 +26,6 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "version": "1.1.0"
 } 

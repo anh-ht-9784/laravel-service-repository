@@ -1,6 +1,6 @@
 # Laravel Service Repository Generator
 
-A Laravel package for generating Services and Repositories with automatic dependency injection.
+A Laravel package for generating Services and Repositories with automatic dependency injection and API response standardization.
 
 ## Installation
 
@@ -38,7 +38,7 @@ composer require anhht/laravel-service-repository-generator
 
 ### Commands
 
-The package provides two main commands:
+The package provides three main commands:
 
 #### 1. Create Service and Repository
 ```bash
@@ -73,8 +73,46 @@ This command will:
 - Publish configuration to `config/laravel-service-repository.php`
 - Update `AppServiceProvider` with repository and service bindings
 
+#### 3. Publish API Files
+```bash
+php artisan service-repo:publish-api-routes [--force]
+```
+
+This command will:
+- Publish API routes template to `routes/api.php`
+- Publish BaseApiController to `app/Http/Controllers/Api/BaseApiController.php`
+- Publish ApiCodes constants to `app/Constants/ApiCodes.php`
+
 **Options:**
 - `--force`: Overwrite existing files
+
+### API Response Standardization
+
+The package provides a `BaseApiController` that standardizes all API responses:
+
+```php
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use Anhht\LaravelServiceRepository\Controllers\BaseApiController;
+
+class UserController extends BaseApiController
+{
+    public function index()
+    {
+        return $this->safeExecute(function() {
+            return User::paginate(10);
+        }, 'Users retrieved successfully');
+    }
+}
+```
+
+**Features:**
+- **Smart Response Handling**: Automatically detects success/error responses
+- **Safe Execution**: Catches exceptions and formats them properly
+- **Data Formatting**: Automatically formats Models, Collections, and Paginators
+- **Flexible Return**: Support array returns `[data, message, code]` for customization
 
 ### Automatic Dependency Injection
 
@@ -96,6 +134,15 @@ The package provides several helper functions (available in `app/helpers/functio
 - `base_setup_version()` - Get package version from config
 - `base_setup_name()` - Get package name
 - `base_setup_is_enabled()` - Check if package is enabled
+
+### API Constants
+
+The package provides standardized API response codes (available in `app/Constants/ApiCodes.php`):
+
+- **Success Codes**: `SUCCESS` (200), `CREATED` (201)
+- **Client Error Codes**: `BAD_REQUEST` (400), `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `UNPROCESSABLE_ENTITY` (422)
+- **Server Error Codes**: `INTERNAL_SERVER_ERROR` (500)
+- **Custom Codes**: `VALIDATION_ERROR` (1000)
 
 ### Configuration
 
@@ -121,8 +168,14 @@ app/
 │   ├── Contracts/
 │   │   └── {Model}RepositoryContract.php
 │   └── {Model}Repository.php
+├── Http/Controllers/Api/
+│   └── BaseApiController.php
+├── Constants/
+│   └── ApiCodes.php
 ├── helpers/
 │   └── functions.php
+├── routes/
+│   └── api.php
 └── Providers/
     └── AppServiceProvider.php (updated with bindings)
 
