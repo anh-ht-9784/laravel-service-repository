@@ -104,20 +104,20 @@ class PublishCommand extends Command
         return false;
     }
 
-  /**
+    /**
      * Update AppServiceProvider with repository and service bindings
      */
     private function updateAppServiceProvider(): void
     {
         $appServiceProviderPath = app_path('Providers/AppServiceProvider.php');
-        
+
         if (!file_exists($appServiceProviderPath)) {
             $this->error('AppServiceProvider.php not found');
             return;
         }
 
         $content = file_get_contents($appServiceProviderPath);
-        
+
         // Check if bindings are already added
         if (strpos($content, 'registerRepositories()') !== false) {
             return;
@@ -127,13 +127,13 @@ class PublishCommand extends Command
         if (strpos($content, 'public function register(): void') !== false) {
             // Add method calls to register() method
             $content = $this->addMethodCallsToRegister($content);
-            
+
             // Add the binding methods
             $content = $this->addBindingMethods($content);
-            
+
             // Write back to file
             file_put_contents($appServiceProviderPath, $content);
-            
+
             $this->line('AppServiceProvider updated with repository and service bindings');
         } else {
             $this->line('AppServiceProvider register() method not found, skipping update');
@@ -147,12 +147,11 @@ class PublishCommand extends Command
     {
         // Find the closing brace of register() method and add method calls before it
         $pattern = '/(public function register\(\): void\s*\{[^}]*)\}/s';
-        
+
         $replacement = '$1
-        $this->registerRepositories();
-        $this->registerServices();
+        $this->registerServiceAndRepositories();
     }';
-        
+
         return preg_replace($pattern, $replacement, $content);
     }
 
@@ -164,60 +163,19 @@ class PublishCommand extends Command
         $bindingMethods = '
 
     /**
-     * Register repositories
+     * Register service and repositories
      */
-    protected function registerRepositories(): void
+    protected function registerServiceAndRepositories(): void
     {
-        $repositoriesPath = app_path(\'Repositories/Contracts\');
-        
-        if (!is_dir($repositoriesPath)) {
-            return;
-        }
-
-        $files = glob($repositoriesPath . \'/*.php\');
-        
-        foreach ($files as $file) {
-            $contractName = basename($file, \'.php\');
-            $contractClass = "App\\\\Repositories\\\\Contracts\\\\{$contractName}";
-            $implementationClass = "App\\\\Repositories\\\\{$contractName}";
-            
-            if (class_exists($contractClass) && class_exists($implementationClass)) {
-                $this->app->bind($contractClass, $implementationClass);
-            }
-        }
-    }
-
-    /**
-     * Register services
-     */
-    protected function registerServices(): void
-    {
-        $servicesPath = app_path(\'Services/Contracts\');
-        
-        if (!is_dir($servicesPath)) {
-            return;
-        }
-
-        $files = glob($servicesPath . \'/*.php\');
-        
-        foreach ($files as $file) {
-            $contractName = basename($file, \'.php\');
-            $contractClass = "App\\\\Services\\\\Contracts\\\\{$contractName}";
-            $implementationClass = "App\\\\Services\\\\{$contractName}";
-            
-            if (class_exists($contractClass) && class_exists($implementationClass)) {
-                $this->app->bind($contractClass, $implementationClass);
-            }
-        }
     }';
-        
+
         // Add methods before the last closing brace of the class (only the last one)
         $lastBracePos = strrpos($content, '}');
         if ($lastBracePos !== false) {
             $content = substr($content, 0, $lastBracePos) . $bindingMethods . "\n" . substr($content, $lastBracePos);
         }
-        
+
         return $content;
     }
-    
-} 
+
+}

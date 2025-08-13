@@ -92,6 +92,9 @@ class CreateRepositoryAndService extends Command
             $this->createRepositoryFiles($repositoryName, $fileRepositoryContractName, $fileRepositoryName);
         }
 
+        // Auto-bind to AppServiceProvider if registerServiceAndRepositories exists
+        $this->autoBindToAppServiceProvider($serviceName, $repositoryName);
+
         // Check if setup is already completed
         if (!$this->isSetupCompleted()) {
             // Mark setup as completed
@@ -390,5 +393,74 @@ class ' . $repository . 'Repository implements ' . $repository . 'RepositoryCont
     {
         $setupFile = storage_path('app/base-setup-completed.txt');
         file_put_contents($setupFile, date('Y-m-d H:i:s') . ' - Base Setup package installed successfully');
+    }
+
+    /**
+     * Auto-bind service and repository to AppServiceProvider
+     */
+    protected function autoBindToAppServiceProvider(string $serviceName, string $repositoryName): void
+    {
+        $appServiceProviderPath = app_path('Providers/AppServiceProvider.php');
+        
+        if (!file_exists($appServiceProviderPath)) {
+            $this->comment('AppServiceProvider not found, skipping auto-binding');
+            return;
+        }
+
+        $content = file_get_contents($appServiceProviderPath);
+        
+        // Check if registerServiceAndRepositories function exists
+        if (strpos($content, 'registerServiceAndRepositories') === false) {
+            $this->comment('registerServiceAndRepositories function not found. Please run "php artisan service-repo:publish" first to create the function.');
+            return;
+        }
+
+        // Check if binding already exists
+        $serviceBinding = "\\App\\Services\\Contracts\\{$serviceName}ServiceContract::class";
+        $repositoryBinding = "\\App\\Repositories\\Contracts\\{$repositoryName}RepositoryContract::class";
+        
+        if (strpos($content, $serviceBinding) !== false && strpos($content, $repositoryBinding) !== false) {
+            $this->comment('Service and Repository bindings already exist in AppServiceProvider');
+            return;
+        }
+
+        // Add bindings to registerServiceAndRepositories function
+        $updatedContent = $this->addBindingsToAppServiceProvider($content, $serviceName, $repositoryName);
+        
+        if ($updatedContent !== $content) {
+            file_put_contents($appServiceProviderPath, $updatedContent);
+            $this->info("✅ Auto-bound {$serviceName}Service and {$repositoryName}Repository to AppServiceProvider");
+        }
+    }
+
+    /**
+     * Add bindings to AppServiceProvider
+     */
+    protected function addBindingsToAppServiceProvider(string $content, string $serviceName, string $repositoryName): string
+    {
+        // Find the registerServiceAndRepositories function
+        $pattern = '/(protected function registerServiceAndRepositories\(\): void\s*\{[^}]*)\}/s';
+        
+        if (preg_match($pattern, $content, $matches)) {
+            $functionBody = $matches[1];
+            
+            // Check if bindings already exist
+            $serviceBinding = "\\App\\Services\\Contracts\\{$serviceName}ServiceContract::class";
+            $repositoryBinding = "\\App\\Repositories\\Contracts\\{$repositoryName}RepositoryContract::class";
+            
+            if (strpos($functionBody, $serviceBinding) === false) {
+                $functionBody .= "\n        \$this->app->bind({$serviceBinding}, \\App\\Services\\{$serviceName}Service::class);";
+            }
+            
+            if (strpos($functionBody, $repositoryBinding) === false) {
+                $functionBody .= "\n        \$this->app->bind({$repositoryBinding}, \\App\\Repositories\\{$repositoryName}Repository::class);";
+            }
+            
+            // Replace the function body
+            $newFunction = $functionBody . "\n    }";
+            $content = preg_replace($pattern, $newFunction, $content);
+        }
+        
+        return $content;
     }
 }
